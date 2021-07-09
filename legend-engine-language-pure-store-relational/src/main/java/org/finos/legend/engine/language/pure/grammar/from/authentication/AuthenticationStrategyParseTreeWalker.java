@@ -57,7 +57,18 @@ public class AuthenticationStrategyParseTreeWalker
         AuthenticationStrategyParserGrammar.SnowflakePublicAuthPassPhraseVaultRefContext snowflakePublicAuthPassPhraseVaultRef = PureGrammarParserUtility.validateAndExtractRequiredField(snowflakePublicAuth.snowflakePublicAuthPassPhraseVaultRef(), "passPhraseVaultReference", code.getSourceInformation());
         snowflakePublicAuthenticationStrategy.passPhraseVaultReference = PureGrammarParserUtility.fromGrammarString(snowflakePublicAuthPassPhraseVaultRef.STRING().getText(), true);
         return snowflakePublicAuthenticationStrategy;
-
-
     }
+
+    public RedshiftPublicAuthenticationStrategy visitRedshiftPublicAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.RedshiftPublicAuthContext redshiftPublicAuth)
+    {
+        RedshiftPublicAuthenticationStrategy redshiftPublicAuthenticationStrategy = new RedshiftPublicAuthenticationStrategy();
+        redshiftPublicAuthenticationStrategy.sourceInformation = code.getSourceInformation();
+        AuthenticationStrategyParserGrammar.RedshiftUserNameContext userName = PureGrammarParserUtility.validateAndExtractRequiredField(redshiftPublicAuth.redshiftUserName(), "userName", code.getSourceInformation());
+        redshiftPublicAuthenticationStrategy.userName = PureGrammarParserUtility.fromGrammarString(userName.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.RedshiftPasswordContext password = PureGrammarParserUtility.validateAndExtractRequiredField(redshiftPublicAuth.redshiftPassword(), "password", code.getSourceInformation());
+        redshiftPublicAuthenticationStrategy.password = PureGrammarParserUtility.fromGrammarString(password.STRING().getText(), true);
+        return redshiftPublicAuthenticationStrategy;
+    }
+
+
 }

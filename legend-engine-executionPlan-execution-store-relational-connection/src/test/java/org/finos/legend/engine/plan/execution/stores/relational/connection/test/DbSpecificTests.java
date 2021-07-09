@@ -67,6 +67,7 @@ public abstract class DbSpecificTests
         for (Future<Boolean> val : result)
         {
             res = res && val.get();
+            System.out.println(res);
         }
         assert (res);
     }

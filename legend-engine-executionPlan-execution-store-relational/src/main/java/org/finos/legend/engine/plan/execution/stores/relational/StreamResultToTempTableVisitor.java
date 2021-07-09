@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
@@ -76,6 +77,12 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         {
             ingestionMethod = snowflakeCommands.getDefaultIngestionMethod();
         }
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    @Override
+    public Boolean visit(RedshiftCommands redshiftCommands)
+    {
         throw new UnsupportedOperationException("not yet implemented");
     }
 
