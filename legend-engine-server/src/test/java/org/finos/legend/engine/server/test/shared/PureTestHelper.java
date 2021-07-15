@@ -54,6 +54,7 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.junit.Ignore;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -65,8 +66,13 @@ public class PureTestHelper
 {
     private static final ThreadLocal<ServersState> state = new ThreadLocal<>();
 
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger("PureTestHelper");
+
+
     public static boolean initClientVersionIfNotAlreadySet(String defaultClientVersion)
     {
+        logger.info("qwerty: we are init default client version: " + defaultClientVersion);
+
         boolean isNotSet = System.getProperty("alloy.test.clientVersion") == null && System.getProperty("legend.test.clientVersion") == null;
         if (isNotSet)
         {
@@ -74,18 +80,42 @@ public class PureTestHelper
             System.setProperty("legend.test.clientVersion", defaultClientVersion);
             System.setProperty("alloy.test.serverVersion", "v1");
             System.setProperty("legend.test.serverVersion", "v1");
+            System.setProperty("legend.test.serializationKind", "json");
+
+
+            System.out.println("qweinfo: clientVersion is " + System.getProperty("legend.test.clientVersion"));
+            System.out.println("qweinfo: serverVersion is " + System.getProperty("legend.test.serverVersion"));
+            System.out.println("qweinfo: serializationKind is " + System.getProperty("legend.test.serializationKind"));
+            System.out.println("qweinfo: databaseType is " + System.getProperty("legend.test.databaseType"));
+
+        }
+        return isNotSet;
+    }
+
+    public static boolean defaultRuntimeToH2IfNotAlreadySet()
+    {
+        return defaultRuntimeToH2IfNotAlreadySet("qh2");
+    }
+
+    public static boolean defaultRuntimeToH2IfNotAlreadySet(String defaultH2)
+    {
+        boolean isNotSet = System.getProperty("alloy.test.databaseType") == null;
+        if (isNotSet)
+        {
+            System.setProperty("legend.test.databaseType", defaultH2);
         }
         return isNotSet;
     }
 
     public static void cleanUp()
     {
+        System.out.println("qwerty: cleaning up");
         System.clearProperty("alloy.test.clientVersion");
         System.clearProperty("legend.test.clientVersion");
     }
 
     @Ignore
-    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder)
+    public static TestSetup wrapSuite(Function0<Boolean> init,  Function0<TestSuite> suiteBuilder)
     {
         boolean shouldCleanUp = init.value();
         TestSuite suite = suiteBuilder.value();
@@ -405,7 +435,7 @@ public class PureTestHelper
             // See https://github.com/opentracing/opentracing-java/issues/364
             GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
             String testName = PackageableElement.getUserPathForPackageableElement(this.coreInstance);
-            System.out.print("EXECUTING " + testName + " ... ");
+            System.out.print("EXECUTING QWERTY TEST " + testName + " ... ");
             long start = System.nanoTime();
             try
             {
@@ -420,8 +450,12 @@ public class PureTestHelper
         }
     }
 
+
     public static TestSuite buildSuite(TestCollection testCollection, ExecutionSupport executionSupport)
     {
+        System.out.println("qwerty: building Suite");
+//        set up logger
+
         MutableList<TestSuite> subSuites = new FastList<>();
         for (TestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
         {
@@ -433,6 +467,8 @@ public class PureTestHelper
                 testCollection.getPureAndAlloyOnlyFunctions(),
                 subSuites,
                 executionSupport
+
+                //PURETESTHELPER.JAVA debug qwerty
         );
     }
 
