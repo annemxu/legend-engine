@@ -47,6 +47,7 @@ public class SQLExecutionResult extends Result
 
     private final org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode SQLExecutionNode;
     private final String databaseType;
+    private final boolean statusEIB;
     private final String databaseTimeZone;
     private final Calendar calendar;
     private final List<String> temporaryTables;
@@ -54,6 +55,7 @@ public class SQLExecutionResult extends Result
     private final Connection connection;
     private final Statement statement;
     private final ResultSet resultSet;
+
     private final ResultSetMetaData resultSetMetaData;
     private final String executedSql;
 
@@ -64,16 +66,70 @@ public class SQLExecutionResult extends Result
 
     public Span topSpan;
 
+    public SQLExecutionResult(String eidString, List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
+    {
+        super("success", activities);
+        System.out.println("---SQLEXECUTIONRESULT EIB ROUTE");
+        this.SQLExecutionNode = SQLExecutionNode;
+        this.databaseType = databaseType;
+        this.databaseTimeZone = databaseTimeZone;
+        this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
+        this.temporaryTables = temporaryTables;
+        this.topSpan = topSpan;
+        try
+        {
+            this.connection = connection;
+            this.statement = connection.createStatement();
+
+            long start = System.currentTimeMillis();
+            String sql = eidString;
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+
+            this.statement.execute(sql);
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
+            this.executedSql = sql;
+            resultSet = null;
+            columnCount = 1;
+            sqlResultColumns = null;
+            resultSetMetaData = null;
+            statusEIB = true;
+
+        }
+        catch (Throwable e)
+        {
+
+            this.close();
+            if (e instanceof Error)
+            {
+
+                System.out.println("we have this error");
+                System.out.println(e);
+
+
+                throw (Error) e;
+            }
+            if (e instanceof RuntimeException)
+            {
+                System.out.println("we have this runtime exception");
+                System.out.println(e);
+
+                throw (RuntimeException) e;
+            }
+            throw new RuntimeException(e);
+        }
+    }
+
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
         super("success", activities);
+
+        System.out.println("---SQLEXECUTIONRESULT NORMAL ROUTE");
 
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
         this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
         this.temporaryTables = temporaryTables;
-
         this.topSpan = topSpan;
 
         try
@@ -81,18 +137,28 @@ public class SQLExecutionResult extends Result
             this.connection = connection;
             this.statement = connection.createStatement();
 
+
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
+
+
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+
             this.resultSet = this.statement.executeQuery(sql);
+            statusEIB = false;
+
+
+
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
+
 
             this.resultSetMetaData = resultSet.getMetaData();
 
             this.columnCount = this.resultSetMetaData.getColumnCount();
 
             this.sqlResultColumns = this.SQLExecutionNode.getSQLResultColumns();
+
             for (int i = 1; i <= this.columnCount; i++)
             {
                 String columnLabel = resultSetMetaData.getColumnLabel(i);
@@ -100,16 +166,28 @@ public class SQLExecutionResult extends Result
                 SQLResultColumn col = this.sqlResultColumns.get(i - 1);
                 this.resultColumns.add(new ResultColumn(i, col.label, col.dataType, this.resultSetMetaData.getColumnType(i)));
             }
+
+            System.out.println("sqlexecutionesult contents finshed");
+
         }
         catch (Throwable e)
         {
+
             this.close();
             if (e instanceof Error)
             {
+
+                System.out.println("we have this error");
+                System.out.println(e);
+
+
                 throw (Error) e;
             }
             if (e instanceof RuntimeException)
             {
+                System.out.println("we have this runtime exception");
+                System.out.println(e);
+
                 throw (RuntimeException) e;
             }
             throw new RuntimeException(e);
@@ -130,6 +208,11 @@ public class SQLExecutionResult extends Result
     public String getDatabaseType()
     {
         return this.databaseType;
+    }
+
+    public boolean getstatusEIB()
+    {
+        return this.statusEIB;
     }
 
     public String getDatabaseTimeZone()

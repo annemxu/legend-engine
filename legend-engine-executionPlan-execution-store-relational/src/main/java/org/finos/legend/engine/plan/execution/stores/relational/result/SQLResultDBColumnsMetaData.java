@@ -29,12 +29,21 @@ public class SQLResultDBColumnsMetaData
 
     SQLResultDBColumnsMetaData(List<SQLResultColumn> resultColumns, ResultSetMetaData rsMetaData) throws SQLException
     {
-        this.sqlResultColumns = resultColumns;
-        this.dbMetaDataType = Lists.multiReader.ofInitialCapacity(resultColumns.size());
-        for (int i = 1; i <= resultColumns.size(); i++)
-        {
-            this.dbMetaDataType.add(rsMetaData.getColumnType(i));
+
+        System.out.println(resultColumns);
+        if (resultColumns == null) {
+            sqlResultColumns = null;
+            dbMetaDataType = null;
         }
+        else {
+            this.sqlResultColumns = resultColumns;
+            this.dbMetaDataType = Lists.multiReader.ofInitialCapacity(resultColumns.size());
+            for (int i = 1; i <= resultColumns.size(); i++)
+            {
+                this.dbMetaDataType.add(rsMetaData.getColumnType(i));
+            }
+        }
+
     }
 
     boolean isTimestampColumn(int index)
